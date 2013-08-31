@@ -1,0 +1,205 @@
+# Shadow Warrior Makefile for Watcom Make
+
+SRC=source
+OBJ=obj
+EROOT=engine
+EINC=$(EROOT)\include
+ELIB=$(EROOT)\obj.msc
+INC=$(SRC)
+o=obj
+
+ENGINELIB=engine.lib
+EDITORLIB=build.lib
+
+!ifdef DEBUG
+# debugging options
+flags_cl=/G6Fy /Od /Z7
+flags_link=/DEBUG
+!else
+# release options
+flags_cl=/G6Fy /Ox #/Ob1gity
+flags_link=/RELEASE
+!endif
+
+
+DXROOT=c:\sdks\directx\dx81
+
+ENGINEOPTS=/DSUPERBUILD /DPOLYMOST /DUSE_OPENGL /DDYNAMIC_OPENGL
+
+CC=cl
+AS=ml
+LINK=link /opt:nowin98 /nologo /opt:ref
+CFLAGS= /MD /J /nologo $(flags_cl)  \
+	/I$(INC) /I$(EINC) /I$(SRC)\jmact /I$(SRC)\jaudiolib \
+	$(ENGINEOPTS) \
+	/I$(DXROOT)\include /DRENDERTYPEWIN=1
+LIBS=user32.lib gdi32.lib shell32.lib dxguid.lib winmm.lib wsock32.lib #opengl32.lib
+ASFLAGS=/nologo /coff
+EXESUFFIX=.exe
+
+JMACTOBJ=$(OBJ)\util_lib.$o \
+	$(OBJ)\file_lib.$o \
+	$(OBJ)\control.$o \
+	$(OBJ)\keyboard.$o \
+	$(OBJ)\mouse.$o \
+	$(OBJ)\mathutil.$o \
+	$(OBJ)\scriplib.$o \
+	$(OBJ)\animlib.$o
+
+#JAUDIOLIB_FX=$(OBJ)\jaudiolib_fxstub.$o
+#JAUDIOLIB_MUSIC=$(OBJ)\jaudiolib_musicstub.$o
+#JAUDIOLIB_FX=$(OBJ)\jaudiolib_fx_fmod.$o
+JAUDIOLIB_FX=$(OBJ)\mv_mix.$o \
+	  $(OBJ)\mv_mix16.$o \
+	  $(OBJ)\mvreverb.$o \
+	  $(OBJ)\pitch.$o \
+	  $(OBJ)\multivoc.$o \
+	  $(OBJ)\ll_man.$o \
+	  $(OBJ)\fx_man.$o \
+	  $(OBJ)\dsoundout.$o
+JAUDIOLIB_MUSIC=$(OBJ)\midi.$o \
+	  $(OBJ)\mpu401.$o \
+	  $(OBJ)\music.$o
+JAUDIOLIBOBJ=$(JAUDIOLIB_MUSIC) $(JAUDIOLIB_FX)
+
+GAMEOBJS=$(OBJ)\actor.$o \
+	$(OBJ)\ai.$o \
+	$(OBJ)\anim.$o \
+	$(OBJ)\border.$o \
+	$(OBJ)\break.$o \
+	$(OBJ)\bunny.$o \
+	$(OBJ)\cache.$o \
+	$(OBJ)\cd.$o \
+	$(OBJ)\cheats.$o \
+	$(OBJ)\colormap.$o \
+	$(OBJ)\config.$o \
+	$(OBJ)\console.$o \
+	$(OBJ)\coolg.$o \
+	$(OBJ)\coolie.$o \
+	$(OBJ)\copysect.$o \
+	$(OBJ)\demo.$o \
+	$(OBJ)\draw.$o \
+	$(OBJ)\eel.$o \
+	$(OBJ)\game.$o \
+	$(OBJ)\girlninj.$o \
+	$(OBJ)\goro.$o \
+	$(OBJ)\hornet.$o \
+	$(OBJ)\interp.$o \
+	$(OBJ)\interpsh.$o \
+	$(OBJ)\inv.$o \
+	$(OBJ)\jplayer.$o \
+	$(OBJ)\jsector.$o \
+	$(OBJ)\jweapon.$o \
+	$(OBJ)\lava.$o \
+	$(OBJ)\light.$o \
+	$(OBJ)\mclip.$o \
+	$(OBJ)\mdastr.$o \
+	$(OBJ)\menus.$o \
+	$(OBJ)\miscactr.$o \
+	$(OBJ)\morph.$o \
+	$(OBJ)\net.$o \
+	$(OBJ)\ninja.$o \
+	$(OBJ)\panel.$o \
+	$(OBJ)\player.$o \
+	$(OBJ)\predict.$o \
+	$(OBJ)\quake.$o \
+	$(OBJ)\ripper.$o \
+	$(OBJ)\ripper2.$o \
+	$(OBJ)\rooms.$o \
+	$(OBJ)\rotator.$o \
+	$(OBJ)\rts.$o \
+	$(OBJ)\save.$o \
+	$(OBJ)\scrip2.$o \
+	$(OBJ)\sector.$o \
+	$(OBJ)\serp.$o \
+	$(OBJ)\setup.$o \
+	$(OBJ)\skel.$o \
+	$(OBJ)\skull.$o \
+	$(OBJ)\slidor.$o \
+	$(OBJ)\sounds.$o \
+	$(OBJ)\spike.$o \
+	$(OBJ)\sprite.$o \
+	$(OBJ)\sumo.$o \
+	$(OBJ)\swconfig.$o \
+	$(OBJ)\sync.$o \
+	$(OBJ)\text.$o \
+	$(OBJ)\track.$o \
+	$(OBJ)\usrhooks.$o \
+	$(OBJ)\vator.$o \
+	$(OBJ)\vis.$o \
+	$(OBJ)\wallmove.$o \
+	$(OBJ)\warp.$o \
+	$(OBJ)\weapon.$o \
+	$(OBJ)\zilla.$o \
+	$(OBJ)\zombie.$o \
+	$(OBJ)\saveable.$o \
+	$(JMACTOBJ) \
+	$(JAUDIOLIBOBJ) \
+	$(OBJ)\cda_win32.$o $(OBJ)\gameres.res 
+
+EDITOROBJS=$(OBJ)\jnstub.$o \
+	$(OBJ)\brooms.$o \
+	$(OBJ)\bldscript.$o \
+	$(OBJ)\jbhlp.$o \
+	$(OBJ)\colormap.$o \
+	$(OBJ)\buildres.res
+	
+
+# RULES
+.SUFFIXES: .masm
+
+{$(SRC)}.masm{$(OBJ)}.$o:
+	$(AS) /c $(ASFLAGS) /Fo$@ $<
+
+{$(SRC)\jaudiolib}.masm{$(OBJ)}.$o:
+	$(AS) /c $(ASFLAGS) /Fo$@ $<
+
+{$(SRC)\jmact}.c{$(OBJ)}.$o:
+	$(CC) /c $(CFLAGS) /Fo$@ $<
+
+{$(SRC)\jaudiolib}.c{$(OBJ)}.$o:
+	$(CC) /c $(CFLAGS) /Fo$@ $<
+
+{$(SRC)\util}.c{$(OBJ)}.$o:
+	$(CC) /c $(CFLAGS) /Fo$@ $<
+
+{$(SRC)}.c{$(OBJ)}.$o:
+	$(CC) /c $(CFLAGS) /Fo$@ $<
+
+{$(SRC)\misc}.rc{$(OBJ)}.res:
+	$(RC) /i$(EINC) /i$(SRC) /fo$@ /r $<
+
+
+# TARGETS
+all: sw$(EXESUFFIX) build$(EXESUFFIX) ;
+
+sw$(EXESUFFIX): $(GAMEOBJS) $(ELIB)\$(ENGINELIB)
+	$(LINK) /OUT:$@ /SUBSYSTEM:WINDOWS /LIBPATH:$(DXROOT)\lib $(flags_link) /MAP $** $(LIBS) msvcrt.lib
+	
+build$(EXESUFFIX): $(EDITOROBJS) $(ELIB)\$(ENGINELIB) $(ELIB)\$(EDITORLIB)
+	$(LINK) /OUT:$@ /SUBSYSTEM:WINDOWS /LIBPATH:$(DXROOT)\lib $(flags_link) /MAP $** $(LIBS) msvcrt.lib
+
+!include Makefile.deps
+
+enginelib editorlib: AlwaysBuild
+	echo CFLAGS=$(ENGINEOPTS) > engineoverrides.mak
+	cd $(EROOT)
+	nmake /f Makefile.msvc "OVERRIDES=$(MAKEDIR)\engineoverrides.mak" $@
+	cd $(MAKEDIR)
+
+AlwaysBuild: ;
+$(ELIB)\$(EDITORLIB): editorlib ;
+$(ELIB)\$(ENGINELIB): enginelib ;
+
+# PHONIES	
+clean:
+	-del /q $(OBJ)\*
+	cd $(EROOT)
+	nmake /f Makefile.msvc $@
+	cd $(MAKEDIR)
+	
+veryclean: clean
+	-del /q sw$(EXESUFFIX) build$(EXESUFFIX)
+	cd $(EROOT)
+	nmake /f Makefile.msvc $@
+	cd $(MAKEDIR)
