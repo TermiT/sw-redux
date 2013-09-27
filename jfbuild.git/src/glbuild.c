@@ -126,34 +126,38 @@ static void * getproc_(const char *s, int *err, int fatal, int extension)
 #define GETPROCEXTSOFT(s) getproc_(s,&err,0,1)
 
 int loadgldriver(const char *driver)
-{
-	void *t;
-	int err=0;
-	
-#ifdef RENDERTYPEWIN
-	if (hGLDLL) return 0;
+{ 
+        int err=0; 
+        #ifdef __linux   
+        const char * driver2 = "libGL.so"; 
+        #endif 
+#ifdef RENDERTYPEWIN 
+        if (hGLDLL) return 0; 
+#endif 
+ 
+        if (!driver) { 
+#ifdef _WIN32 
+                driver = "OPENGL32.DLL"; 
+#elif defined __APPLE__ 
+                driver = "/System/Library/Frameworks/OpenGL.framework/OpenGL"; 
+#else 
+                driver = "libGL.so.1"; 
+#endif 
+        } 
+ 
+        initprintf("Loading %s\n",driver); 
+ 
+#if defined RENDERTYPESDL 
+        if (SDL_GL_LoadLibrary(driver)){ 
+                return -1; 
+        }  
+        #ifdef __linux 
+        else if (SDL_GL_LoadLibrary(driver2)) { 
+                driver = driver2;        
+                return -1; 
+        }        
+        #endif 
 #endif
-
-	if (!driver) {
-#ifdef _WIN32
-		driver = "OPENGL32.DLL";
-#elif defined __APPLE__
-		driver = "/System/Library/Frameworks/OpenGL.framework/OpenGL";
-#else
-		driver = "libGL.so";
-#endif
-	}
-
-	initprintf("Loading %s\n",driver);
-
-#if defined RENDERTYPESDL
-	if (SDL_GL_LoadLibrary(driver)) return -1;
-#elif defined _WIN32
-	hGLDLL = LoadLibrary(driver);
-	if (!hGLDLL) return -1;
-#endif
-	gldriver = strdup(driver);
-
 #ifdef RENDERTYPEWIN
 	bwglCreateContext	= GETPROC("wglCreateContext");
 	bwglDeleteContext	= GETPROC("wglDeleteContext");

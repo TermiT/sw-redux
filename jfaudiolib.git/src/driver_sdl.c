@@ -307,14 +307,12 @@ void SDLDrv_CD_Shutdown(void) {
     SDLDrv_CD_Stop();
 }
 
-int  SDLDrv_CD_Play(int track, int loop) {
-    char filename[40];
+int  CD_PlayFile(const char * filename, int loop) {
 
     if (music != NULL) {
         SDLDrv_CD_Stop();
     }
 
-    sprintf(filename, "classic/MUSIC/Track%02d.ogg", track); /* SW REDUX specific */
     music = Mix_LoadMUS(filename);
 
     if(music == NULL) {
@@ -330,6 +328,20 @@ int  SDLDrv_CD_Play(int track, int loop) {
     }
     return SDLErr_Ok;
 }
+
+
+int CD_PlayByName(const char *songname, const char *folder, int loop) {
+    char filename[200];
+    sprintf(filename, "%s/%s", folder, songname); /* MEGATON specific */
+    return CD_PlayFile(filename, loop);
+}
+
+int  SDLDrv_CD_Play(int track, int loop) {
+    char filename[200];
+    sprintf(filename, "classic/MUSIC/Track%02d.ogg", track); /* SW REDUX specific */
+    return CD_PlayFile(filename, loop);
+}
+
 
 void SDLDrv_CD_Stop(void) {
          Mix_HaltMusic();

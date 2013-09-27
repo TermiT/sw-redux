@@ -571,14 +571,6 @@ char palfadedelta = 0;
 //
 //long cacheresets = 0,cacheinvalidates = 0;
 
-//
-// getpalookup (internal)
-//
-static inline long getpalookup(long davis, long dashade)
-{
-	return(min(max(dashade+(davis>>8),0),numpalookups-1));
-}
-
 
 //
 // scansector (internal)
@@ -5480,7 +5472,16 @@ void drawrooms(long daposx, long daposy, long daposz,
 
 	i = mulscale16(xdimenscale,viewingrangerecip);
 	globalpisibility = mulscale16(parallaxvisibility,i);
-	globalvisibility = mulscale16(visibility,i);
+    if (rendmode == 0)
+        globalvisibility = mulscale16(visibility,i);
+    else
+    {
+        if (r_usenewshading==2)
+            globalvisibility = scale(visibility<<2, xdimen, 1680);
+        else
+            globalvisibility = scale(visibility<<2, xdimen, 1100);
+    }
+
 	globalhisibility = mulscale16(globalvisibility,xyaspect);
 	globalcisibility = mulscale8(globalhisibility,320);
 

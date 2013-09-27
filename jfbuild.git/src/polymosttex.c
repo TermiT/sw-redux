@@ -42,6 +42,7 @@ struct PTIter_typ {
 	int match;
 	long picnum;
 	long palnum;
+	long shade;
 	unsigned short flagsmask;
 	unsigned short flags;
 };
@@ -181,6 +182,7 @@ static void ptm_calculateid(const PTHead * pth, int extra, unsigned char id[16])
 			int flags;
 			int palnum;
 			int picnum;
+			int shade;
 			int layer;
 		} artid;
 		
@@ -189,6 +191,7 @@ static void ptm_calculateid(const PTHead * pth, int extra, unsigned char id[16])
 		artid.flags = pth->flags & (PTH_CLAMPED);
 		artid.palnum = pth->palnum;
 		artid.picnum = pth->picnum;
+		artid.shade = pth->shade;
 		artid.layer = extra;
 		
 		md4once((unsigned char *) &artid, sizeof(artid), id);
@@ -441,11 +444,12 @@ const char * PTM_GetLoadTextureFileErrorString(int err)
  * Finds the pthash entry for a tile, possibly creating it if one doesn't exist
  * @param picnum tile number
  * @param palnum palette number
+ * @param shade
  * @param flags PTH_HIGHTILE = try for hightile, PTH_CLAMPED
  * @param create !0 = create if none found
  * @return the PTHash item, or null if none was found
  */
-static PTHash * pt_findhash(long picnum, long palnum, unsigned short flags, int create)
+static PTHash * pt_findhash(long picnum, long palnum, long shade, unsigned short flags, int create)
 {
 	int i = pt_gethashhead(picnum);
 	PTHash * pth;
@@ -458,7 +462,8 @@ static PTHash * pt_findhash(long picnum, long palnum, unsigned short flags, int 
 	while (pth) {
 		if (pth->head.picnum == picnum &&
 		    pth->head.palnum == palnum &&
-		    (pth->head.flags & (PTH_HIGHTILE | PTH_CLAMPED | PTH_SKYBOX)) == flagmask
+		    (pth->head.flags & (PTH_HIGHTILE | PTH_CLAMPED | PTH_SKYBOX)) == flagmask &&
+            ((flagmask & PTH_HIGHTILE) ? 1 : pth->head.shade == shade)
 		   ) {
 			while (pth->deferto) {
 				pth = pth->deferto;	// find the end of the chain
@@ -488,6 +493,7 @@ static PTHash * pt_findhash(long picnum, long palnum, unsigned short flags, int 
 		pth->next = pthashhead[i];
 		pth->head.picnum  = picnum;
 		pth->head.palnum  = palnum;
+		pth->head.shade   = shade;
 		pth->head.flags   = flagmask;
 		pth->head.repldef = replc;
 		
@@ -503,7 +509,7 @@ static PTHash * pt_findhash(long picnum, long palnum, unsigned short flags, int 
 				;
 			} else {
 				// we defer to the substitute
-				pth->deferto = pt_findhash(picnum, replc->palnum, flags, create);
+				pth->deferto = pt_findhash(picnum, replc->palnum, shade, flags, create);
 				while (pth->deferto) {
 					pth = pth->deferto;	// find the end of the chain
 				}
@@ -513,7 +519,7 @@ static PTHash * pt_findhash(long picnum, long palnum, unsigned short flags, int 
 			if (flags & PTH_SKYBOX) {
 				return 0;
 			} else {
-				pth->deferto = pt_findhash(picnum, palnum, (flags & ~PTH_HIGHTILE), create);
+				pth->deferto = pt_findhash(picnum, palnum, shade, (flags & ~PTH_HIGHTILE), create);
 				while (pth->deferto) {
 					pth = pth->deferto;	// find the end of the chain
 				}
@@ -565,7 +571,7 @@ static int pt_load(PTHash * pth)
 		// if that failed, get the hash for the ART version and
 		//   defer this to there
 		pth->deferto = pt_findhash(
-				pth->head.picnum, pth->head.palnum,
+				pth->head.picnum, pth->head.palnum, pth->head.shade,
 				(pth->head.flags & ~PTH_HIGHTILE),
 				1);
 		if (!pth->deferto) {
@@ -664,8 +670,9 @@ static int pt_load_art(PTHead * pth)
 					wpptr->a = 0;
 					hasalpha = 1;
 				} else {
+                    char *p = (char *)(palookup[pth->palnum])+(int32_t)(pth->shade<<8);
 					wpptr->a = 255;
-					dacol = (long) ((unsigned char)palookup[pth->palnum][dacol]);
+                    dacol = (uint8_t)p[dacol];
 				}
 				if (gammabrightness) {
 					wpptr->r = curpalette[dacol].r;
@@ -784,8 +791,8 @@ static int pt_load_hightile(PTHead * pth)
 		if ((err = PTM_LoadTextureFile(filename, pth->pic[texture], pth->flags, effects))) {
 			if (polymosttexverbosity >= 1) {
 				const char * errstr = PTM_GetLoadTextureFileErrorString(err);
-				initprintf("PolymostTex: %s (pic %d pal %d) %s\n",
-						   filename, pth->picnum, pth->palnum, errstr);
+				initprintf("PolymostTex: %s (pic %d pal %d shade %d) %s\n",
+						   filename, pth->picnum, pth->palnum, pth->shade, errstr);
 			}
 			continue;
 		}
@@ -1296,7 +1303,7 @@ void PTMarkPrime(long picnum, long palnum, unsigned short flags)
 {
 	PTHash * pth;
 	
-	pth = pt_findhash(picnum, palnum, flags, 1);
+	pth = pt_findhash(picnum, palnum, 0, flags, 1);
 	if (pth) {
 		if (pth->primecnt == 0) {
 			primecnt++;
@@ -1405,15 +1412,18 @@ void PTClear()
  * Fetches a texture header ready for rendering
  * @param picnum
  * @param palnum
+ * @param shade
  * @param flags
  * @param peek if !0, does not try and create a header if none exists
  * @return pointer to the header, or null if peek!=0 and none exists
  */
-PTHead * PT_GetHead(long picnum, long palnum, unsigned short flags, int peek)
+PTHead * PT_GetHead(long picnum, long palnum, long shade, unsigned short flags, int peek)
 {
+    if (!r_usetileshades) shade = 0;
+
 	PTHash * pth;
 	
-	pth = pt_findhash(picnum, palnum, flags, peek == 0);
+	pth = pt_findhash(picnum, palnum, shade, flags, peek == 0);
 	if (pth == 0) {
 		return 0;
 	}
@@ -1443,6 +1453,9 @@ static inline int ptiter_matches(PTIter iter)
 		return 0;
 	}
 	if ((iter->match & PTITER_PALNUM) && iter->pth->head.palnum != iter->palnum) {
+		return 0;
+	}
+	if ((iter->match & PTITER_SHADE) && iter->pth->head.shade != iter->shade) {
 		return 0;
 	}
 	if ((iter->match & PTITER_FLAGS) && (iter->pth->head.flags & iter->flagsmask) != iter->flags) {
@@ -1483,11 +1496,12 @@ static void ptiter_seekforward(PTIter iter)
  * @param match PTITER_* flags indicating which parameters to test
  * @param picnum when (match&PTITER_PICNUM), specifies the picnum
  * @param palnum when (match&PTITER_PALNUM), specifies the palnum
+ * @param shade when (match&PTITER_SHADE), specifies the shade
  * @param flagsmask when (match&PTITER_FLAGS), specifies the mask to apply to flags
  * @param flags when (match&PTITER_FLAGS), specifies the flags to test
  * @return an iterator
  */
-PTIter PTIterNewMatch(int match, long picnum, long palnum, unsigned short flagsmask, unsigned short flags)
+PTIter PTIterNewMatch(int match, long picnum, long palnum, long shade, unsigned short flagsmask, unsigned short flags)
 {
 	PTIter iter;
 	
@@ -1501,6 +1515,7 @@ PTIter PTIterNewMatch(int match, long picnum, long palnum, unsigned short flagsm
 	iter->match = match;
 	iter->picnum = picnum;
 	iter->palnum = palnum;
+	iter->shade = shade;
 	iter->flagsmask = flagsmask;
 	iter->flags = flags;
 	
@@ -1524,7 +1539,7 @@ PTIter PTIterNewMatch(int match, long picnum, long palnum, unsigned short flagsm
  */
 PTIter PTIterNew(void)
 {
-	return PTIterNewMatch(0, 0, 0, 0, 0);
+	return PTIterNewMatch(0, 0, 0, 0, 0, 0);
 }
 
 /**

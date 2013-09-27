@@ -68,18 +68,5 @@
          landmarkName = "GUI::InitUserMapsPage(Rocket::Core::ElementDocument *menu_page)"
          landmarkType = "5">
       </FileBreakpoint>
-      <FileBreakpoint
-         shouldBeEnabled = "Yes"
-         ignoreCount = "0"
-         continueAfterRunningActions = "No"
-         filePath = "../code/megawang.cpp"
-         timestampString = "399626490.63469"
-         startingColumnNumber = "9223372036854775807"
-         endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "108"
-         endingLineNumber = "108"
-         landmarkName = "swSetAddon(short addonId)"
-         landmarkType = "7">
-      </FileBreakpoint>
    </FileBreakpoints>
 </Bucket>

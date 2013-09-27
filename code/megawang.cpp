@@ -63,7 +63,7 @@ int swGetTile(int tile_no, int *width, int *height, void *data) {
     int x, y;
     GLsizei w, h;
     unsigned int *buffer;
-    pth = PT_GetHead(tile_no, 0, 3, 0);
+    pth = PT_GetHead(tile_no, 0, 0, 3, 0);
     if (pth != NULL) {
         GLuint glpic = pth->pic[PTHPIC_BASE]->glpic;
         

@@ -22,7 +22,7 @@ extern long globalposx, globalposy, globalposz, globalhoriz;
 extern short globalang, globalcursectnum;
 extern long globalpal, cosglobalang, singlobalang;
 extern long cosviewingrangeglobalang, sinviewingrangeglobalang;
-extern long globalvisibility;
+extern long globvis, globalvisibility;
 extern long xyaspect;
 extern long pixelaspect;
 extern long widescreen, tallscreen;
@@ -53,12 +53,26 @@ extern short p2[MAXWALLSB];
 extern short numscans, numhits, numbunches;
 
 #ifdef USE_OPENGL
+
+// For GL_EXP2 fog:
+#define FOGSCALE 0.0000768
+
 extern palette_t palookupfog[MAXPALOOKUPS];
+void calc_and_apply_fog(int32_t tile, int32_t shade, int32_t vis, int32_t pal);
+void calc_and_apply_fog_factor(int32_t tile, int32_t shade, int32_t vis, int32_t pal, float factor);
 #endif
 
 long wallmost(short *mostbuf, long w, long sectnum, char dastat);
 long wallfront(long l1, long l2);
 long animateoffs(short tilenum, short fakevar);
+
+//
+// getpalookup (internal)
+//
+static inline long getpalookup(long davis, long dashade)
+{
+	return(min(max(dashade+(davis>>8),0),numpalookups-1));
+}
 
 
 #if defined(__WATCOMC__) && !defined(NOASM)

@@ -45,5 +45,8 @@ void polymost_fillpolygon (long npoints);
 long polymost_printext256(long xpos, long ypos, short col, short backcol, char *name, char fontsize);
 void polymost_initosdfuncs(void);
 
+// These generally should not change.
+extern int32_t r_usenewshading;
+extern int32_t r_usetileshades;
 
 #endif

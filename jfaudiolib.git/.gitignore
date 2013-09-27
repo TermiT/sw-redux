@@ -1,0 +1,8 @@
+*.o
+*.obj
+*.a
+*.lib
+/build
+/*.xcodeproj/*.mode1v3
+/*.xcodeproj/*.pbxuser
+/Makefile.user

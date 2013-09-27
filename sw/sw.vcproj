@@ -1013,10 +1013,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\jfaudiolib.git\src\driver_sdl.c"
-				>
-			</File>
-			<File
 				RelativePath="..\jfaudiolib.git\src\driver_winmm.c"
 				>
 			</File>

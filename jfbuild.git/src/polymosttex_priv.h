@@ -37,6 +37,7 @@ struct PTHead_typ {
 					// when !(flags & PTH_SKYBOX), see PTHPIC_* constants
 	long picnum;
 	long palnum;
+	long shade;
 	unsigned short flags;
 	
 	hicreplctyp *repldef;
@@ -49,7 +50,8 @@ typedef struct PTHead_typ PTHead;
 enum {
 	PTITER_PICNUM = 1,
 	PTITER_PALNUM = 2,
-	PTITER_FLAGS  = 4,
+	PTITER_SHADE  = 4,
+	PTITER_FLAGS  = 8,
 };
 
 struct PTIter_typ;	// an opaque iterator type for walking the internal hash
@@ -91,11 +93,12 @@ void PTClear();
  * @param match PTITER_* flags indicating which parameters to test
  * @param picnum when (match&PTITER_PICNUM), specifies the picnum
  * @param palnum when (match&PTITER_PALNUM), specifies the palnum
+ * @param shade when (match&PTITER_SHADE), specifies the shade
  * @param flagsmask when (match&PTITER_FLAGS), specifies the mask to apply to flags
  * @param flags when (match&PTITER_FLAGS), specifies the flags to test
  * @return an iterator
  */
-PTIter PTIterNewMatch(int match, long picnum, long palnum, unsigned short flagsmask, unsigned short flags);
+PTIter PTIterNewMatch(int match, long picnum, long palnum, long shade, unsigned short flagsmask, unsigned short flags);
 
 /**
  * Creates a new iterator for walking the entire header hash
@@ -123,13 +126,14 @@ void PTIterFree(PTIter iter);
  * disk if need be (if peek!=0).
  * @param picnum
  * @param palnum
+ * @param shade
  * @param flags
  * @param peek if !0, does not try and create a header if none exists
  * @return pointer to the header, or null if peek!=0 and none exists
  *
  * Shared method for polymost.c to call.
  */
-PTHead * PT_GetHead(long picnum, long palnum, unsigned short flags, int peek);
+PTHead * PT_GetHead(long picnum, long palnum, long shade, unsigned short flags, int peek);
 
 
 /**
