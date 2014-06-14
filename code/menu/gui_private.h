@@ -92,6 +92,7 @@ public:
     virtual void DidClearKeyChooserValue(Rocket::Core::Element *menu_item, int slot);
     virtual void DidClearItem(Rocket::Core::Element *menu_item);
 
+    void ShowErrorMessage(const char *page_id, const char *message);
 
     void InitKeysSetupPage(Rocket::Core::ElementDocument *page);
 
@@ -110,7 +111,7 @@ public:
     void InitMouseSetupPage(Rocket::Core::ElementDocument *menu_page);
 
     void InitLoadPage(Rocket::Core::ElementDocument *menu_page);
-    void InitUserMapsPage(Rocket::Core::ElementDocument *menu_page);
+    void InitUserMapsPage(const char * page_id);
 
     void ShowConfirmation(ConfirmableAction *action, const Rocket::Core::String& document, const Rocket::Core::String& text, const Rocket::Core::String& default_option="yes");
 

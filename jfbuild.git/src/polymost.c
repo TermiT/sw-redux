@@ -101,6 +101,16 @@ static double dxb1[MAXWALLSB], dxb2[MAXWALLSB];
 int32_t r_usenewshading = 2;
 int32_t r_usetileshades = 1;
 
+static inline float getshadefactor(int32_t shade)
+{
+    int32_t shadebound = (shade>=numpalookups) ? numpalookups : numpalookups-1;
+    float clamped_shade = min(max(shade, 0), shadebound);
+    if (rendmode == 3 && r_usetileshades &&
+        (!usehightile || !hicfindsubst(globalpicnum, globalpal, 0)) &&
+        (!usemodels || md_tilehasmodel(globalpicnum) < 0)) return 1.f;
+    return ((float)(numpalookups-clamped_shade))/(float)numpalookups;
+}
+
 double gxyaspect, grhalfxdown10x;
 static double gyxscale, gviewxrange, ghalfx, grhalfxdown10, ghoriz;
 double gcosang, gsinang, gcosang2, gsinang2;
@@ -800,8 +810,7 @@ void drawpoly (double *dpx, double *dpy, long n, long method)
 
 		{
 			float pc[3];
-			f = ((float)(numpalookups-min(max(globalshade,0),numpalookups)))/((float)numpalookups);
-			pc[0] = pc[1] = pc[2] = f;
+            pc[0] = pc[1] = pc[2] = getshadefactor(globalshade);
 			switch(method & (METH_MASKED | METH_TRANS))
 			{
 				case METH_SOLID:   alphac = 1.0; break;
@@ -1740,7 +1749,7 @@ static void polymost_drawalls (long bunch)
         
 		globalpicnum = sec->floorpicnum; globalshade = sec->floorshade; globalpal = (long)((unsigned char)sec->floorpal);
 		globalorientation = sec->floorstat;
-		if (picanm[globalpicnum]&192) globalpicnum += animateoffs(globalpicnum,sectnum);
+		DO_TILE_ANIM(globalpicnum,sectnum);
 		if (!(globalorientation&1))
 		{
             //(singlobalang/-16384*(sx-ghalfx) + 0*(sy-ghoriz) + (cosviewingrangeglobalang/16384)*ghalfx)*d + globalposx    = u*16
@@ -2091,7 +2100,7 @@ static void polymost_drawalls (long bunch)
         
 		globalpicnum = sec->ceilingpicnum; globalshade = sec->ceilingshade; globalpal = (long)((unsigned char)sec->ceilingpal);
 		globalorientation = sec->ceilingstat;
-		if (picanm[globalpicnum]&192) globalpicnum += animateoffs(globalpicnum,sectnum);
+		DO_TILE_ANIM(globalpicnum,sectnum);
 		if (!(globalorientation&1))
 		{
 			if (!(globalorientation&64))
@@ -2490,7 +2499,7 @@ static void polymost_drawalls (long bunch)
 			if (((cy0 < ocy0) || (cy1 < ocy1)) && (!((sec->ceilingstat&sector[nextsectnum].ceilingstat)&1)))
 			{
 				globalpicnum = wal->picnum; globalshade = wal->shade; globalpal = (long)((unsigned char)wal->pal);
-				if (picanm[globalpicnum]&192) globalpicnum += animateoffs(globalpicnum,wallnum+16384);
+				DO_TILE_ANIM(globalpicnum,wallnum+16384);
                 
 				if (!(wal->cstat&4)) i = sector[nextsectnum].ceilingz; else i = sec->ceilingz;
 				t0 = ((float)(i-globalposz))*ryp0 + ghoriz;
@@ -2537,7 +2546,7 @@ static void polymost_drawalls (long bunch)
 					guy += (float)(nwal->xpanning-wal->xpanning)*gdy;
 				}
 				globalpicnum = nwal->picnum; globalshade = nwal->shade; globalpal = (long)((unsigned char)nwal->pal);
-				if (picanm[globalpicnum]&192) globalpicnum += animateoffs(globalpicnum,wallnum+16384);
+				DO_TILE_ANIM(globalpicnum,wallnum+16384);
                 
 				if (!(nwal->cstat&4)) i = sector[nextsectnum].floorz; else i = sec->ceilingz;
 				t0 = ((float)(i-globalposz))*ryp0 + ghoriz;
@@ -2580,7 +2589,7 @@ static void polymost_drawalls (long bunch)
 		{
 			if (nextsectnum < 0) globalpicnum = wal->picnum; else globalpicnum = wal->overpicnum;
 			globalshade = wal->shade; globalpal = (long)((unsigned char)wal->pal);
-			if (picanm[globalpicnum]&192) globalpicnum += animateoffs(globalpicnum,wallnum+16384);
+			DO_TILE_ANIM(globalpicnum,wallnum+16384);
             
 			if (nextsectnum >= 0) { if (!(wal->cstat&4)) i = nextsec->ceilingz; else i = sec->ceilingz; }
             else { if (!(wal->cstat&4)) i = sec->ceilingz;     else i = sec->floorz; }
@@ -2990,7 +2999,7 @@ void polymost_drawmaskwall (long damaskwallcnt)
 	z2 = min(nsec->floorz,sec->floorz);
 
 	globalpicnum = wal->overpicnum; if ((unsigned long)globalpicnum >= MAXTILES) globalpicnum = 0;
-	if (picanm[globalpicnum]&192) globalpicnum += animateoffs(globalpicnum,(short)thewall[z]+16384);
+	DO_TILE_ANIM(globalpicnum,(short)thewall[z]+16384);
 	globalshade = (long)wal->shade;
 	globalpal = (long)((unsigned char)wal->pal);
 	globalorientation = (long)wal->cstat;
@@ -3146,7 +3155,7 @@ void polymost_drawsprite (long snum)
 	spritenum         = tspr->owner;
 
 	if ((globalorientation&48) != 48) {	// only non-voxel sprites should do this
-		if (picanm[globalpicnum]&192) globalpicnum += animateoffs(globalpicnum,spritenum+32768);
+		DO_TILE_ANIM(globalpicnum,spritenum+32768);
 
 		xoff = (long)((signed char)((picanm[globalpicnum]>>8)&255))+((long)tspr->xoffset);
 		yoff = (long)((signed char)((picanm[globalpicnum]>>16)&255))+((long)tspr->yoffset);
@@ -3713,7 +3722,13 @@ void polymost_dorotatesprite (long sx, long sy, long z, short a, short picnum,
 			if ((d < y2) != (d < 0)) { py[n] = fy; px[n] = (px2[zz]-px2[z])*d/y2 + px2[z]; n++; }
 			z = zz;
 		} while (z);
-		pow2xsplit = 0; drawpoly(px,py,n,method);
+       #ifdef USE_OPENGL
+               if (!nofog) bglDisable(GL_FOG);
+               pow2xsplit = 0; drawpoly(px,py,n,method);
+               if (!nofog) bglEnable(GL_FOG);
+       #else
+                pow2xsplit = 0; drawpoly(px,py,n,method);
+       #endif
 	}
 
 #ifdef USE_OPENGL
@@ -3926,7 +3941,7 @@ void polymost_fillpolygon (long npoints)
 	pth = our_texcache_fetch(usehightile ? PTH_HIGHTILE : 0);
 	bglBindTexture(GL_TEXTURE_2D, (pth && pth->pic[PTHPIC_BASE]) ? pth->pic[ PTHPIC_BASE ]->glpic : 0);
 
-	f = ((float)(numpalookups-min(max(globalshade,0),numpalookups)))/((float)numpalookups);
+	f = getshadefactor(globalshade);
 	switch ((globalorientation>>7)&3) {
 		case 0:
 		case 1: a = 1.0; bglDisable(GL_BLEND); break;
@@ -4398,8 +4413,9 @@ void polymost_precache(long dapicnum, long dapalnum, long datype)
 	PTMarkPrime(dapicnum, dapalnum, flags);
 
 	if (datype == 0) return;
-
+    
 	mid = md_tilehasmodel(dapicnum);
+    if (models == 0) return;
 	if (mid < 0 || models[mid]->mdnum < 2) return;
 
 	{

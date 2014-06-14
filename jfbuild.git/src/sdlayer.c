@@ -235,8 +235,13 @@ int initsystem(void)
 
 #ifdef USE_OPENGL
 	if (loadgldriver(getenv("BUILD_GLDRV"))) {
-		initprintf("Failed loading OpenGL driver. GL modes will be unavailable.\n");
-		nogl = 1;
+#if MEGAWANG
+        initprintf("Failed loading OpenGL driver. Exiting...\n");
+        return 1;
+#else
+        initprintf("Failed loading OpenGL driver. GL modes will be unavailable.\n");
+        nogl = 1;
+#endif
 	}
 #endif
 

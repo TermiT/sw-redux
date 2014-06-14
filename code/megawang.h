@@ -69,6 +69,7 @@ extern "C" {
 #include "megawang_keys.h"
 
 extern BOOL InMenuLevel;
+extern long workshopmap_group_handler;
     
 typedef struct _GameDesc {
     unsigned char level;
@@ -88,7 +89,7 @@ typedef struct _GameDesc {
     
 #define MEGAWANG_TITLE_PIC 9400
 #define MEGAWANG_STATUS_BAR 9401
-#define MEGAWANG_VERSION_STRING "Version 1.0.3"
+#define MEGAWANG_VERSION_STRING "Version 1.0.9"
 
 typedef enum {
     SHADOW_WARRIOR_CLASSIC=0,
@@ -103,6 +104,9 @@ int clampi(int v, int min, int max);
 unsigned int clampui(unsigned int v, unsigned int min, unsigned int max);
 float clampf(float v, float min, float max);
 double clampd(double v, double min, double max);
+        
+long get_modified_time(const char * path) ;
+const char* va(const char *format, ...);
 
 int swGetTile(int tile_no, int *width, int *height, void *data);    
 
@@ -131,6 +135,8 @@ void dnSetUserMap(const char * mapname);
 int dnIsUserMap();
 const char* dnGetEpisodeName(int episode);
 const char* dnGetLevelName(int level);
+void dnSetWorkshopMap(const char * mapname, const char * zipname);
+void dnUnsetWorkshopMap();
     
 void swGetCloudFilesName(char *names[]);
 void swPullCloudFiles();

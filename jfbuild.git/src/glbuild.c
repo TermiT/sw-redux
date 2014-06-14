@@ -128,9 +128,6 @@ static void * getproc_(const char *s, int *err, int fatal, int extension)
 int loadgldriver(const char *driver)
 { 
         int err=0; 
-        #ifdef __linux   
-        const char * driver2 = "libGL.so"; 
-        #endif 
 #ifdef RENDERTYPEWIN 
         if (hGLDLL) return 0; 
 #endif 
@@ -151,12 +148,6 @@ int loadgldriver(const char *driver)
         if (SDL_GL_LoadLibrary(driver)){ 
                 return -1; 
         }  
-        #ifdef __linux 
-        else if (SDL_GL_LoadLibrary(driver2)) { 
-                driver = driver2;        
-                return -1; 
-        }        
-        #endif 
 #endif
 #ifdef RENDERTYPEWIN
 	bwglCreateContext	= GETPROC("wglCreateContext");

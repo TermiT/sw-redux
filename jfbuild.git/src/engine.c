@@ -1358,8 +1358,7 @@ static void ceilscan(long x1, long x2, long sectnum)
 	globalpicnum = sec->ceilingpicnum;
 	if ((unsigned)globalpicnum >= (unsigned)MAXTILES) globalpicnum = 0;
 	setgotpic(globalpicnum);
-	if ((tilesizx[globalpicnum] <= 0) || (tilesizy[globalpicnum] <= 0)) return;
-	if (picanm[globalpicnum]&192) globalpicnum += animateoffs((short)globalpicnum,(short)sectnum);
+	DO_TILE_ANIM(globalpicnum,(short)sectnum);
 
 	if (waloff[globalpicnum] == 0) loadtile(globalpicnum);
 	globalbufplc = waloff[globalpicnum];
@@ -1529,8 +1528,7 @@ static void florscan(long x1, long x2, long sectnum)
 	globalpicnum = sec->floorpicnum;
 	if ((unsigned)globalpicnum >= (unsigned)MAXTILES) globalpicnum = 0;
 	setgotpic(globalpicnum);
-	if ((tilesizx[globalpicnum] <= 0) || (tilesizy[globalpicnum] <= 0)) return;
-	if (picanm[globalpicnum]&192) globalpicnum += animateoffs((short)globalpicnum,(short)sectnum);
+    DO_TILE_ANIM(globalpicnum,(short)sectnum);
 
 	if (waloff[globalpicnum] == 0) loadtile(globalpicnum);
 	globalbufplc = waloff[globalpicnum];
@@ -2065,7 +2063,7 @@ static void grouscan(long dax1, long dax2, long sectnum, char dastat)
 		daz = sec->floorz;
 	}
 
-	if ((picanm[globalpicnum]&192) != 0) globalpicnum += animateoffs(globalpicnum,sectnum);
+    DO_TILE_ANIM(globalpicnum,sectnum);
 	setgotpic(globalpicnum);
 	if ((tilesizx[globalpicnum] <= 0) || (tilesizy[globalpicnum] <= 0)) return;
 	if (waloff[globalpicnum] == 0) loadtile(globalpicnum);
@@ -2232,7 +2230,7 @@ static void parascan(long dax1, long dax2, long sectnum, char dastat, long bunch
 	}
 
 	if ((unsigned)globalpicnum >= (unsigned)MAXTILES) globalpicnum = 0;
-	if (picanm[globalpicnum]&192) globalpicnum += animateoffs(globalpicnum,(short)sectnum);
+	DO_TILE_ANIM(globalpicnum,(short)sectnum);
 	globalshiftval = (picsiz[globalpicnum]>>4);
 	if (pow2long[globalshiftval] != tilesizy[globalpicnum]) globalshiftval++;
 	globalshiftval = 32-globalshiftval;
@@ -2458,7 +2456,7 @@ static void drawalls(long bunch)
 					globalshiftval = (picsiz[globalpicnum]>>4);
 					if (pow2long[globalshiftval] != tilesizy[globalpicnum]) globalshiftval++;
 					globalshiftval = 32-globalshiftval;
-					if (picanm[globalpicnum]&192) globalpicnum += animateoffs(globalpicnum,(short)wallnum+16384);
+					DO_TILE_ANIM(globalpicnum,(short)wallnum+16384);
 					globalshade = (long)wal->shade;
 					globvis = globalvisibility;
 					if (sec->visibility != 0) globvis = mulscale4(globvis,(long)((unsigned char)(sec->visibility+16)));
@@ -2548,7 +2546,7 @@ static void drawalls(long bunch)
 						if ((unsigned)globalpicnum >= (unsigned)MAXTILES) globalpicnum = 0;
 						globalxpanning = (long)wal->xpanning;
 						globalypanning = (long)wal->ypanning;
-						if (picanm[globalpicnum]&192) globalpicnum += animateoffs(globalpicnum,(short)wallnum+16384);
+						DO_TILE_ANIM(globalpicnum,(short)wallnum+16384);
 						globalshade = (long)wal->shade;
 						globalpal = (long)wal->pal;
 						wallnum = thewall[z]; wal = &wall[wallnum];
@@ -2560,7 +2558,7 @@ static void drawalls(long bunch)
 						if ((unsigned)globalpicnum >= (unsigned)MAXTILES) globalpicnum = 0;
 						globalxpanning = (long)wal->xpanning;
 						globalypanning = (long)wal->ypanning;
-						if (picanm[globalpicnum]&192) globalpicnum += animateoffs(globalpicnum,(short)wallnum+16384);
+						DO_TILE_ANIM(globalpicnum,(short)wallnum+16384);
 						globalshade = (long)wal->shade;
 						globalpal = (long)wal->pal;
 					}
@@ -2651,7 +2649,7 @@ static void drawalls(long bunch)
 			if ((unsigned)globalpicnum >= (unsigned)MAXTILES) globalpicnum = 0;
 			globalxpanning = (long)wal->xpanning;
 			globalypanning = (long)wal->ypanning;
-			if (picanm[globalpicnum]&192) globalpicnum += animateoffs(globalpicnum,(short)wallnum+16384);
+			DO_TILE_ANIM(globalpicnum,(short)wallnum+16384);
 			globalshade = (long)wal->shade;
 			globvis = globalvisibility;
 			if (sec->visibility != 0) globvis = mulscale4(globvis,(long)((unsigned char)(sec->visibility+16)));
@@ -2968,7 +2966,7 @@ static void drawsprite(long snum)
 
 	if ((cstat&48) != 48)
 	{
-		if (picanm[tilenum]&192) tilenum += animateoffs(tilenum,spritenum+32768);
+		DO_TILE_ANIM(tilenum,spritenum+32768);
 		if ((tilesizx[tilenum] <= 0) || (tilesizy[tilenum] <= 0) || (spritenum < 0))
 			return;
 	}
@@ -3675,7 +3673,7 @@ static void drawsprite(long snum)
 		globalorientation = cstat;
 		globalpicnum = tilenum;
 		if ((unsigned)globalpicnum >= (unsigned)MAXTILES) globalpicnum = 0;
-		//if (picanm[globalpicnum]&192) globalpicnum += animateoffs((short)globalpicnum,spritenum+32768);
+        //DO_TILE_ANIM((short)globalpicnum,spritenum+32768);
 
 		if (waloff[globalpicnum] == 0) loadtile(globalpicnum);
 		setgotpic(globalpicnum);
@@ -3882,7 +3880,7 @@ static void drawmaskwall(short damaskwallcnt)
 	if ((unsigned)globalpicnum >= (unsigned)MAXTILES) globalpicnum = 0;
 	globalxpanning = (long)wal->xpanning;
 	globalypanning = (long)wal->ypanning;
-	if (picanm[globalpicnum]&192) globalpicnum += animateoffs(globalpicnum,(short)thewall[z]+16384);
+    DO_TILE_ANIM(globalpicnum,(short)thewall[z]+16384);
 	globalshade = (long)wal->shade;
 	globvis = globalvisibility;
 	if (sec->visibility != 0) globvis = mulscale4(globvis,(long)((unsigned char)(sec->visibility+16)));
@@ -5460,6 +5458,7 @@ void drawrooms(long daposx, long daposy, long daposz,
 {
 	long i, j, z, cz, fz, closest;
 	short *shortptr1, *shortptr2;
+	extern int32_t r_usenewshading;
 
 	beforedrawrooms = 0;
 
@@ -5903,7 +5902,7 @@ void drawmapview(long dax, long day, long zoome, short ang)
 			if ((unsigned)globalpicnum >= (unsigned)MAXTILES) globalpicnum = 0;
 			setgotpic(globalpicnum);
 			if ((tilesizx[globalpicnum] <= 0) || (tilesizy[globalpicnum] <= 0)) continue;
-			if ((picanm[globalpicnum]&192) != 0) globalpicnum += animateoffs((short)globalpicnum,s);
+            DO_TILE_ANIM(globalpicnum,s);
 			if (waloff[globalpicnum] == 0) loadtile(globalpicnum);
 			globalbufplc = waloff[globalpicnum];
 			globalshade = max(min(sec->floorshade,numpalookups-1),0);
@@ -6037,7 +6036,7 @@ void drawmapview(long dax, long day, long zoome, short ang)
 			if ((unsigned)globalpicnum >= (unsigned)MAXTILES) globalpicnum = 0;
 			setgotpic(globalpicnum);
 			if ((tilesizx[globalpicnum] <= 0) || (tilesizy[globalpicnum] <= 0)) continue;
-			if ((picanm[globalpicnum]&192) != 0) globalpicnum += animateoffs((short)globalpicnum,s);
+            DO_TILE_ANIM(globalpicnum,s);
 			if (waloff[globalpicnum] == 0) loadtile(globalpicnum);
 			globalbufplc = waloff[globalpicnum];
 			if ((sector[spr->sectnum].ceilingstat&1) > 0)
@@ -9010,7 +9009,7 @@ void rotatesprite(long sx, long sy, long z, short a, short picnum, signed char d
 
 	if ((cx1 > cx2) || (cy1 > cy2)) return;
 	if (z <= 16) return;
-	if (picanm[picnum]&192) picnum += animateoffs(picnum,(short)0xc000);
+    DO_TILE_ANIM(picnum,(short)0xc000);
 	if ((tilesizx[picnum] <= 0) || (tilesizy[picnum] <= 0)) return;
 
 	if (((dastat&128) == 0) || (numpages < 2) || (beforedrawrooms != 0)) {

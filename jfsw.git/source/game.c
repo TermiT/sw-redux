@@ -145,6 +145,7 @@ BOOL LoadGameFromDemo = FALSE;
 BOOL ArgCheat = FALSE;
 BOOL megawangdef = FALSE;
 BOOL weaponhack = TRUE;
+BOOL noanim = FALSE;
 #else
 BOOL ArgCheat = FALSE;
 #endif
@@ -188,6 +189,10 @@ AUTO_NET Auto;
 BOOL AutoNet = FALSE;
 BOOL HasAutoColor = FALSE;
 BYTE AutoColor;
+
+#ifdef MEGAWANG
+BOOL ClassicLighting = TRUE;
+#endif
 
 GAME_SET gs = {
 0, // mouse speed
@@ -1819,6 +1824,7 @@ LogoLevel(VOID)
     PlaySong(NULL, 15, TRUE, TRUE);
 #endif
 
+#if !MEGAWANG        
     DSPRINTF(ds,"After music stuff...");
     MONO_PRINT(ds);    
 
@@ -1840,7 +1846,7 @@ LogoLevel(VOID)
     DSPRINTF(ds,"Just read in 3drealms.pal...");
     MONO_PRINT(ds);
         
-#if !MEGAWANG
+
     //FadeOut(0, 0);
     ready2send = 0;
     totalclock = 0;
@@ -1883,7 +1889,7 @@ LogoLevel(VOID)
     clearview(0);
     nextpage();
     //SetPaletteToVESA(backup_pal);
-    setbrightness(gs.Brightness, (char*)palette_data, 2);
+    //setbrightness(gs.Brightness, (char*)palette_data, 2);
 
     // put up a blank screen while loading
 
@@ -4221,6 +4227,12 @@ long app_main(long argc, char *argv[])
                 weaponhack = FALSE;
             }
 
+            if (Bstrncasecmp(arg, "noanim", 7) == 0) {
+                noanim = TRUE;
+            }
+
+            
+
 #endif
         }
 
@@ -5712,8 +5724,7 @@ FunctionKeys(pp);
 
 #define MAP_BLOCK_SPRITE    (DK_BLUE + 6)
 
-void drawoverheadmap(long cposx, long cposy, long czoom, short cang)
-    {
+void drawoverheadmap(long cposx, long cposy, long czoom, short cang) {
     long i, j, k, l, x1, y1, x2, y2, x3, y3, x4, y4, ox, oy, xoff, yoff;
     long dax, day, cosang, sinang, xspan, yspan, sprx, spry;
     long xrepeat, yrepeat, z1, z2, startwall, endwall, tilenum, daang;
@@ -5725,17 +5736,27 @@ void drawoverheadmap(long cposx, long cposy, long czoom, short cang)
     static long pspr_ndx[8]={0,0,0,0,0,0,0,0};
     BOOL sprisplayer = FALSE;
     short txt_x, txt_y;
+#if MEGAWANG
+    float ky = ydim/(float)240;
+    float kx = xdim/(float)320;
+    float n = kx/ky;
+    int screensizex = 320 * n;
+#endif
     
     // draw location text
-    if (gs.BorderNum <= BORDER_BAR-1)    
+        if (gs.BorderNum <= BORDER_BAR-1)
         {
-        txt_x = 7;
-        txt_y = 168;
+            txt_x = 7;
+            txt_y = 168;
         } else
         {
-        txt_x = 7;
-        txt_y = 147;
+            txt_x = 7;
+            txt_y = 147;
         }
+        
+#if MEGAWANG
+        txt_x -= (screensizex-320)/2 ;
+#endif
         
     if (ScrollMode2D)
         {

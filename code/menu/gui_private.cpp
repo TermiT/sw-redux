@@ -40,6 +40,9 @@ extern "C" {
 extern BOOL ExitLevel, NewGame, GamePaused;
 extern short Level, Skill;
 extern BOOL MusicInitialized, FxInitialized;
+extern BOOL ClassicLighting;
+extern int32_t r_usenewshading;
+extern int32_t r_usetileshades;
 }
 
 #ifndef _WIN32
@@ -47,12 +50,30 @@ extern BOOL MusicInitialized, FxInitialized;
 #endif
 
 struct ConfirmableAction {
+    Rocket::Core::ElementDocument *doc;
     Rocket::Core::ElementDocument *back_page;
     virtual void Yes() {};
     virtual void No() {};
+    virtual void OnClose() { };
     ConfirmableAction(Rocket::Core::ElementDocument* back_page):back_page(back_page){}
     virtual ~ConfirmableAction(){}
 };
+
+void encode(std::string& data) {
+    std::string buffer;
+    buffer.reserve(data.size());
+    for(size_t pos = 0; pos != data.size(); ++pos) {
+        switch(data[pos]) {
+            case '&':  buffer.append("&amp;");       break;
+            case '\"': buffer.append("&quot;");      break;
+            case '\'': buffer.append("&apos;");      break;
+            case '<':  buffer.append("&lt;");        break;
+            case '>':  buffer.append("&gt;");        break;
+            default:   buffer.append(&data[pos], 1); break;
+        }
+    }
+    data.swap(buffer);
+}
 
 static
 Rocket::Core::String KeyDisplayName(const Rocket::Core::String& key_id) {
@@ -85,6 +106,24 @@ void LoadFonts(const char* directory)
 	}
 }
 
+void workshop_refresh_callback (void *p) {
+    ((GUI*)p)->InitUserMapsPage("menu-usermaps");
+}
+
+void GUI::ShowErrorMessage(const char *page_id, const char *message) {
+    struct LobbyErrorMessage: public ConfirmableAction {
+        Rocket::Core::Context *context;
+        RocketMenuPlugin *menu;
+        LobbyErrorMessage(Rocket::Core::ElementDocument *back_page, Rocket::Core::Context *context, RocketMenuPlugin *menu):ConfirmableAction(back_page),context(context), menu(menu) {}
+        virtual void Yes() {
+        }
+    };
+    Rocket::Core::ElementDocument *page = m_context->GetDocument(page_id);
+    
+    ShowConfirmation(new LobbyErrorMessage(page, m_context, m_menu), "ok", message);
+}
+
+
 void GUI::LoadDocuments() {
     Rocket::Core::ElementDocument *cursor = m_context->LoadMouseCursor("data/pointer.rml");
     if (cursor != NULL) {
@@ -113,6 +152,7 @@ void GUI::LoadDocuments() {
     LoadDocument("data/usermaps.rml");
     LoadDocument("data/quitconfirm.rml");
     LoadDocument("data/panorama.rml");
+    LoadDocument("data/ok.rml");
 }
 
 void GUI::GetAddonDocumentPath(int addon, const Rocket::Core::String& path, char * addonPath) {
@@ -342,6 +382,11 @@ static void DrawStrips() {
 
 void GUI::Render() {
     PLAYERp player = &Player[myconnectindex];
+    GLboolean fogOn = glIsEnabled(GL_FOG);
+    if (fogOn == GL_TRUE) {
+        glDisable(GL_FOG);
+    }
+    CSTEAM_RunFrame();
     
 	//Enable(InMenuLevel && m_enabled_for_current_frame);
 	Enable(UsingMenus != 0);
@@ -358,10 +403,15 @@ void GUI::Render() {
         glClearColor(0, 0, 0, 0);
         glClear(GL_COLOR_BUFFER_BIT);
 		m_context->Render();
+        
 //        if (m_draw_strips && m_menu_offset_y > 0) {
 //			DrawStrips();
 //        }
 	}
+    
+    if (fogOn == GL_TRUE) {
+        glEnable(GL_FOG);
+    }
 }
 
 void GUI::Enable(bool v) {
@@ -753,6 +803,19 @@ void GUI::DoCommand(Rocket::Core::Element *element, const Rocket::Core::String& 
         CSTEAM_OpenCummunityHub();
     } else if (command == "start") {
         m_show_press_enter = false;
+    } else if (command == "load-workshopitem") {
+        Rocket::Core::ElementDocument *doc = m_context->GetDocument("menu-usermaps");
+        Rocket::Core::Element *map = m_menu->GetHighlightedItem(doc);
+        workshop_item_t item;
+        steam_id_t item_id;
+        sscanf(map->GetProperty("item-id")->ToString().CString(), "%llu", &item_id);
+        CSTEAM_GetWorkshopItemByID(item_id, &item);
+        dnSetWorkshopMap(item.itemname, va("/workshop/maps/%llu/%s", item.item_id, item.filename));
+        if (workshopmap_group_handler == -1) {
+            ShowErrorMessage(doc->GetId().CString(), "The map isn't downloaded yet");
+        } else {
+            m_menu->ShowDocument(m_context, "menu-skill");
+        }
     } else if (command == "load-usermap") {
         Rocket::Core::ElementDocument *doc = m_context->GetDocument("menu-usermaps");
         Rocket::Core::Element *map = m_menu->GetHighlightedItem(doc);
@@ -843,14 +906,15 @@ void GUI::ShowConfirmation(ConfirmableAction *action, const Rocket::Core::String
     Rocket::Core::ElementDocument *page = action->back_page;
     Rocket::Core::ElementDocument *doc = m_context->GetDocument(document);
     Rocket::Core::Element *text_element = doc->GetElementById("question");
-
+    
     text_element->SetInnerRML(text);
-
+    
     m_menu->ShowDocument(m_context, document);
     m_menu->HighlightItem(doc, default_option);
     doc->PullToFront();
     page->Show();
     page->PushToBack();
+    action->doc = doc;
     SetActionToConfirm(action);
 }
 
@@ -932,7 +996,8 @@ void GUI::DidOpenMenuPage(Rocket::Core::ElementDocument *menu_page) {
     } else if (page_id == "menu-load" || page_id == "menu-save") {
         InitLoadPage(menu_page);
     } else if (page_id == "menu-usermaps") {
-        InitUserMapsPage(menu_page);
+        CSTEAM_UpdateWorkshopItems(workshop_refresh_callback, this);
+        InitUserMapsPage(page_id.CString());
     } else if (page_id == "menu-episodes") {
         dnSetUserMap(NULL);
     }
@@ -983,6 +1048,7 @@ void GUI::InitVideoOptionsPage(Rocket::Core::ElementDocument *page) {
     dnGetCurrentVideoMode(&vm);
     SetChosenMode(&vm);
     UpdateApplyStatus();
+
     m_menu->ActivateOption(m_menu->GetMenuItem(page, "texture-filter"), gltexfiltermode < 3 ? "retro" : "smooth", false);
     m_menu->ActivateOption(m_menu->GetMenuItem(page, "use-voxels"), gs.Voxels ? "voxels-on" : "voxels-off", false);
     m_menu->SetRangeValue(m_menu->GetMenuItem(page, "gamma"), (float)dnGetBrightness(), false);
@@ -994,6 +1060,7 @@ void GUI::InitVideoOptionsPage(Rocket::Core::ElementDocument *page) {
     sprintf(buf, "fps-%d", fps_max);
     m_menu->ActivateOption(m_menu->GetMenuItem(page, "max-fps"), buf, false);
     m_menu->SetRangeValue(m_menu->GetMenuItem(page, "fov"), xfov*90.0f, false);
+    m_menu->ActivateOption(m_menu->GetMenuItem(page, "classic-lighting"), ClassicLighting ? "classic-lighting-on" : "classic-lighting-off", false);
 }
 
 void GUI::InitSoundOptionsPage(Rocket::Core::ElementDocument *page) {
@@ -1041,7 +1108,8 @@ void GUI::InitKeysSetupPage(Rocket::Core::ElementDocument *page) {
 }
 
 
-void GUI::InitUserMapsPage(Rocket::Core::ElementDocument *menu_page) {
+void GUI::InitUserMapsPage(const char * page_id) {
+    /*Rocket::Core::ElementDocument *menu_page = m_context->GetDocument("menu-usermaps");
     CACHE1D_FIND_REC * dnGetMapsList();
     CACHE1D_FIND_REC * files = dnGetMapsList();
     Rocket::Core::Element *menu = menu_page->GetElementById("menu");
@@ -1060,7 +1128,89 @@ void GUI::InitUserMapsPage(Rocket::Core::ElementDocument *menu_page) {
             m_menu->SetupMenuItem(record);
         }
         m_menu->HighlightItem(menu_page, menu->GetFirstChild()->GetId());
+    }*/
+    
+    
+    Rocket::Core::ElementDocument *menu_page = m_context->GetDocument("menu-usermaps");
+    CACHE1D_FIND_REC * dnGetMapsList();
+    CACHE1D_FIND_REC * files = dnGetMapsList();
+    dnUnsetWorkshopMap();
+    Rocket::Core::Element *menu = menu_page->GetElementById("menu");
+    bool haveFiles = false;
+	Rocket::Core::String firstItem;
+    
+    int num = CSTEAM_NumWorkshopItems();
+	bool workshop_header_added = false;
+    menu->SetInnerRML("");
+    if (num > 0) {
+        for (int i=0; i < num; i++) {
+            workshop_item_t item;
+            CSTEAM_GetWorkshopItemByIndex(i, &item);
+            if (strstr(item.tags, "Singleplayer") == NULL)
+                continue;
+			if (!workshop_header_added) {
+				Rocket::Core::Element *title = new Rocket::Core::Element("div");
+				title->SetInnerRML("WORKSHOP MAPS (SINGLEPLAYER)");
+				title->SetClass("listhdr", true);
+				title->SetAttribute("noanim", "");
+				menu->AppendChild(title);
+				m_menu->SetupMenuItem(title);
+				workshop_header_added = true;
+			}
+            Rocket::Core::Element * record = new Rocket::Core::Element("div");
+            record->SetProperty("item-id", va("%llu", item.item_id));
+            std::string item_title(item.title);
+            encode(item_title);
+            record->SetInnerRML(va("<t>%s (%s)</t>", item_title.c_str(), item.itemname));
+            record->SetId(item.itemname);
+            record->SetAttribute("command", "load-workshopitem");
+            menu->AppendChild(record);
+            m_menu->SetupMenuItem(record);
+			haveFiles = true;
+			if (firstItem == "") {
+				firstItem = record->GetId();
+			}
+        }
     }
+    
+    if (files) {
+        if (num == 0)
+            menu->SetInnerRML("");
+        haveFiles = true;
+        Rocket::Core::Element *title = new Rocket::Core::Element("div");
+        title->SetInnerRML("USER MAPS");
+        title->SetClass("listhdr", true);
+        title->SetAttribute("noanim", "");
+        menu->AppendChild(title);
+        m_menu->SetupMenuItem(title);
+        while (files) {
+            Rocket::Core::Element * record = new Rocket::Core::Element("div");
+            record->SetProperty("map-name", files->name);
+            record->SetInnerRML(va("<t>%s</t>", Bstrlwr(files->name)));
+            record->SetId(files->name);
+			if (firstItem == "") {
+				firstItem = record->GetId();
+			}
+            record->SetAttribute("command", "load-usermap");
+            menu->AppendChild(record);
+            files = files->next;
+            m_menu->SetupMenuItem(record);
+        }
+    }
+    if (haveFiles) {
+        m_menu->HighlightItem(menu_page, firstItem);
+	} else {
+		Rocket::Core::Element *title = new Rocket::Core::Element("div");
+		title->SetInnerRML("No maps found");
+		title->SetClass("empty", true);
+		title->SetAttribute("noanim", "");
+		title->SetId("emptyhdr");
+		menu->AppendChild(title);
+		m_menu->SetupMenuItem(title);
+		m_menu->HighlightItem(menu_page, "emptyhdr");
+	}
+    
+    
 }
 
 
@@ -1227,6 +1377,15 @@ void GUI::DidChangeOptionValue(Rocket::Core::Element *menu_item, Rocket::Core::E
 		}
 	} else if (item_id == "use-voxels") {
         gs.Voxels = ( value_id == "voxels-on" ? 1 : 0 );
+    } else if (item_id == "classic-lighting") {
+        ClassicLighting = (value_id == "classic-lighting-on");
+        if (ClassicLighting) {
+            r_usenewshading = 2;
+            r_usetileshades = 1;
+        } else {
+            r_usenewshading = 0;
+            r_usetileshades = 0;
+        }
     } else if (item_id == "sound") {
 		dnEnableSound( value_id == "sound-on" ? 1 : 0 );
 	} else if (item_id == "music") {

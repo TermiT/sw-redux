@@ -296,6 +296,9 @@ playanm(short anim_num)
     char ANIMvesapal[4*256];
     char tempbuf[256];
     char *palook_bak = palookup[0];
+    extern BOOL noanim;
+        
+    if (noanim) return;
 
     ANIMnum = anim_num;
 

@@ -6,7 +6,7 @@
 #define MAXTILEFILES 256
 #define MAXYSAVES ((MAXXDIM*MAXSPRITES)>>7)
 #define MAXNODESPERLINE 42   //Warning: This depends on MAXYSAVES & MAXYDIM!
-#define MAXWALLSB 2048
+#define MAXWALLSB ((MAXWALLS>>2)+(MAXWALLS>>3))
 #define MAXCLIPDIST 1024
 
 extern char pow2char[8];
@@ -65,6 +65,10 @@ void calc_and_apply_fog_factor(int32_t tile, int32_t shade, int32_t vis, int32_t
 long wallmost(short *mostbuf, long w, long sectnum, char dastat);
 long wallfront(long l1, long l2);
 long animateoffs(short tilenum, short fakevar);
+
+#define DO_TILE_ANIM(Picnum, Fakevar) do { \
+if (picanm[Picnum]&192) Picnum += animateoffs(Picnum, Fakevar); \
+} while (0)
 
 //
 // getpalookup (internal)

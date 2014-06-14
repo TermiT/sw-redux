@@ -8,12 +8,12 @@
 
 /* Begin PBXBuildFile section */
 		7703EF831737FBF80089B6EC /* achievements.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7703EF811737FBF80089B6EC /* achievements.cpp */; };
-		770FF897174A76E70049275A /* libsteam_api.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 770FF896174A76E70049275A /* libsteam_api.dylib */; };
-		770FF899174A77020049275A /* libsteam_api.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 770FF896174A76E70049275A /* libsteam_api.dylib */; };
 		770FF89C174A783D0049275A /* icon.icns in Copy Files */ = {isa = PBXBuildFile; fileRef = 7702125D1747DABB004A7D08 /* icon.icns */; };
 		777D7BFB1768D12200B82FF5 /* playvpx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 777D7BF91768D12200B82FF5 /* playvpx.cpp */; };
 		77A93A33179E6EA000229393 /* lz4.c in Sources */ = {isa = PBXBuildFile; fileRef = 77A93A31179E6EA000229393 /* lz4.c */; };
 		77A93A40179E7B8800229393 /* common_build.c in Sources */ = {isa = PBXBuildFile; fileRef = 77A93A3F179E7B8800229393 /* common_build.c */; };
+		77B76DB61868193E002875F1 /* libsteam_api.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 77B76DB51868193E002875F1 /* libsteam_api.dylib */; };
+		77B76DB718681E0A002875F1 /* libsteam_api.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 77B76DB51868193E002875F1 /* libsteam_api.dylib */; };
 		951B98AA1722C374009DE66F /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 951B98A91722C374009DE66F /* Cocoa.framework */; };
 		9554AB19174FD74C00EFA90F /* driver_coreaudio.c in Sources */ = {isa = PBXBuildFile; fileRef = 9554AB17174FD74C00EFA90F /* driver_coreaudio.c */; };
 		9554AB271753C02300EFA90F /* ogg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9554AB251753C02300EFA90F /* ogg.framework */; };
@@ -181,7 +181,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 6;
 			files = (
-				770FF899174A77020049275A /* libsteam_api.dylib in CopyFiles */,
+				77B76DB718681E0A002875F1 /* libsteam_api.dylib in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -213,7 +213,6 @@
 		7702125D1747DABB004A7D08 /* icon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = icon.icns; sourceTree = "<group>"; };
 		7703EF811737FBF80089B6EC /* achievements.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = achievements.cpp; sourceTree = "<group>"; };
 		7703EF821737FBF80089B6EC /* achievements.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = achievements.h; sourceTree = "<group>"; };
-		770FF896174A76E70049275A /* libsteam_api.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsteam_api.dylib; path = ../steamworks_sdk_123a/redistributable_bin/osx32/libsteam_api.dylib; sourceTree = "<group>"; };
 		777D7BF91768D12200B82FF5 /* playvpx.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = playvpx.cpp; sourceTree = "<group>"; };
 		777D7BFA1768D12200B82FF5 /* playvpx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = playvpx.h; sourceTree = "<group>"; };
 		77A93A30179E6EA000229393 /* lz4_encoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lz4_encoder.h; sourceTree = "<group>"; };
@@ -221,6 +220,7 @@
 		77A93A32179E6EA000229393 /* lz4.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lz4.h; sourceTree = "<group>"; };
 		77A93A3E179E7B7900229393 /* common_build.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = common_build.h; path = ../jfbuild.git/include/common_build.h; sourceTree = "<group>"; };
 		77A93A3F179E7B8800229393 /* common_build.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = common_build.c; path = ../jfbuild.git/src/common_build.c; sourceTree = "<group>"; };
+		77B76DB51868193E002875F1 /* libsteam_api.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsteam_api.dylib; path = ../steamworks_sdk_127/redistributable_bin/osx32/libsteam_api.dylib; sourceTree = "<group>"; };
 		951B98A61722C374009DE66F /* sw.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = sw.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		951B98A91722C374009DE66F /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		951B98AC1722C374009DE66F /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -523,7 +523,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				770FF897174A76E70049275A /* libsteam_api.dylib in Frameworks */,
 				95B9F87717284AD300791968 /* libstdc++.dylib in Frameworks */,
 				95B9F6D11722CA9100791968 /* AudioToolbox.framework in Frameworks */,
 				95B9F6CE1722CA8500791968 /* Quartz.framework in Frameworks */,
@@ -536,6 +535,7 @@
 				951B98AA1722C374009DE66F /* Cocoa.framework in Frameworks */,
 				9554AB271753C02300EFA90F /* ogg.framework in Frameworks */,
 				9554AB281753C02300EFA90F /* vorbis.framework in Frameworks */,
+				77B76DB61868193E002875F1 /* libsteam_api.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -554,9 +554,9 @@
 		951B989D1722C374009DE66F = {
 			isa = PBXGroup;
 			children = (
-				770FF896174A76E70049275A /* libsteam_api.dylib */,
 				7702125D1747DABB004A7D08 /* icon.icns */,
 				95B9F87617284AD300791968 /* libstdc++.dylib */,
+				77B76DB51868193E002875F1 /* libsteam_api.dylib */,
 				95B9F6441722C6C800791968 /* jfsw */,
 				95B9F6431722C6C100791968 /* jfaudiolib */,
 				95B9F6421722C6BC00791968 /* jfmact */,
@@ -1017,7 +1017,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "echo \"Running prepare script\"\nAPP_ID=225160\nOUTPUT_DIR=$HOME/Downloads\nrm -rf $OUTPUT_DIR/$FULL_PRODUCT_NAME\n$SRCROOT/../steamworks_sdk_123a/tools/ContentPrep.app/Contents/MacOS/contentprep.py --console -v -s $TARGET_BUILD_DIR/$FULL_PRODUCT_NAME/ -d $OUTPUT_DIR -a $APP_ID --nowrap";
+			shellScript = "echo \"Running prepare script\"\nAPP_ID=225160\nOUTPUT_DIR=$SRCROOT/../steamworks_sdk_127/tools/ContentBuilder/content/mac/\nrm -rf $OUTPUT_DIR/$FULL_PRODUCT_NAME\n$SRCROOT/../steamworks_sdk_127/tools/ContentPrep.app/Contents/MacOS/contentprep.py --console -v -s $TARGET_BUILD_DIR/$FULL_PRODUCT_NAME/ -d $OUTPUT_DIR -a $APP_ID --nowrap";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -1272,12 +1272,12 @@
 				HEADER_SEARCH_PATHS = (
 					$PROJECT_DIR/../thirdparty/include,
 					$PROJECT_DIR/../jfbuild.git/libsquish,
-					$PROJECT_DIR/../steamworks_sdk_123a/public/steam,
+					$PROJECT_DIR/../steamworks_sdk_127/public/steam,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/../code/sw-Info.plist";
 				LIBRARY_SEARCH_PATHS = (
 					"$PROJECT_DIR/../thirdparty/lib-osx32",
-					$PROJECT_DIR/../steamworks_sdk_123a/redistributable_bin/osx32/,
+					$PROJECT_DIR/../steamworks_sdk_127/redistributable_bin/osx32/,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_LDFLAGS = (
@@ -1288,7 +1288,6 @@
 					"-lRocketDebugger",
 					"-lfreetype",
 					"-lz",
-					"-lsmpeg",
 					"-lvpx",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1330,12 +1329,12 @@
 				HEADER_SEARCH_PATHS = (
 					$PROJECT_DIR/../thirdparty/include,
 					$PROJECT_DIR/../jfbuild.git/libsquish,
-					$PROJECT_DIR/../steamworks_sdk_123a/public/steam,
+					$PROJECT_DIR/../steamworks_sdk_127/public/steam,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/../code/sw-Info.plist";
 				LIBRARY_SEARCH_PATHS = (
 					"$PROJECT_DIR/../thirdparty/lib-osx32",
-					$PROJECT_DIR/../steamworks_sdk_123a/redistributable_bin/osx32/,
+					$PROJECT_DIR/../steamworks_sdk_127/redistributable_bin/osx32/,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_LDFLAGS = (
@@ -1346,7 +1345,6 @@
 					"-lRocketDebugger",
 					"-lfreetype",
 					"-lz",
-					"-lsmpeg",
 					"-lvpx",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";

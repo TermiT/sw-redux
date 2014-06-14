@@ -44,8 +44,8 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
       useCustomWorkingDirectory = "YES"
-      customWorkingDirectory = "$(SRCROOT)/../gameroot/"
-      buildConfiguration = "Debug"
+      customWorkingDirectory = "/Users/termit/projects/megawang/gameroot"
+      buildConfiguration = "Release"
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
       allowLocationSimulation = "YES">
@@ -58,23 +58,12 @@
             ReferencedContainer = "container:sw.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
-      <EnvironmentVariables>
-         <EnvironmentVariable
-            key = "DYLD_INSERT_LIBRARIES"
-            value = "/Applications/Steam.app/Contents/MacOS/osx32/gameoverlayui.dylib"
+      <CommandLineArguments>
+         <CommandLineArgument
+            argument = "-noamim"
             isEnabled = "YES">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "DYLD_LIBRARY_PATH"
-            value = "$(SRCROOT)/../steamworks_sdk_123a/redistributable_bin/osx32"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "DYLD_LIBRARY_PATH"
-            value = "/Applications/Steam.app/Contents/MacOS/osx32/"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-      </EnvironmentVariables>
+         </CommandLineArgument>
+      </CommandLineArguments>
       <AdditionalOptions>
       </AdditionalOptions>
    </LaunchAction>

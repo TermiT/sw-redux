@@ -637,23 +637,41 @@ void RocketMenuPlugin::HighlightItem(Rocket::Core::Context *context, const Rocke
 
 Rocket::Core::Element* RocketMenuPlugin::FindNextItem(Rocket::Core::Element *menu_item) {
 	Rocket::Core::Element *next = menu_item;
-	do {
-		next = next->GetNextSibling();
-		if (next == NULL) {
-			next = menu_item->GetParentNode()->GetChild(0);
-		}
-	} while (next->IsClassSet("disabled") && next != menu_item);
+    
+    do {
+        if (next->HasAttribute("next")) {
+            Rocket::Core::Context *context = next->GetContext();
+            ContextData *cd = GetContextData(context);
+            Rocket::Core::ElementDocument *document = cd->current_document;
+            next = document->GetElementById(next->GetAttribute("next")->Get<Rocket::Core::String>());
+        } else {
+            next = next->GetNextSibling();
+            if (next == NULL) {
+                next = menu_item->GetParentNode()->GetChild(0);
+            }
+        }
+    } while (next->IsClassSet("disabled") && next != menu_item);
+    
 	return next;
 }
 
 Rocket::Core::Element* RocketMenuPlugin::FindPreviousItem(Rocket::Core::Element *menu_item) {
 	Rocket::Core::Element *next = menu_item;
-	do {
-		next = next->GetPreviousSibling();
-		if (next == NULL) {
-			next = menu_item->GetParentNode()->GetChild(menu_item->GetParentNode()->GetNumChildren()-1);
-		}
-	} while (next->IsClassSet("disabled") && next != menu_item);
+    
+    do {
+        if (next->HasAttribute("previous")) {
+            Rocket::Core::Context *context = next->GetContext();
+            ContextData *cd = GetContextData(context);
+            Rocket::Core::ElementDocument *document = cd->current_document;
+            next = document->GetElementById(next->GetAttribute("previous")->Get<Rocket::Core::String>());
+        } else {
+            next = next->GetPreviousSibling();
+            if (next == NULL) {
+                next = menu_item->GetParentNode()->GetChild(menu_item->GetParentNode()->GetNumChildren()-1);
+            }
+        }
+    } while (next->IsClassSet("disabled") && next != menu_item);
+    
 	return next;
 }
 

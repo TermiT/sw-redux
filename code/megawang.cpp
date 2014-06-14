@@ -24,7 +24,6 @@
 #include <GL/glut.h>
 #endif
 
-#include "smpeg/smpeg.h"
 #include "playvpx.h"
 #include "megawang.h"
 
@@ -48,22 +47,31 @@ extern "C" {
 #include "sounds.h"
 #include "cd.h"
 #include "text.h"
+#include <sys/stat.h>    
 }
 
 #ifdef _MSC_VER
+#include <float.h>
 #define isnan _isnan
 #define NAN 0
-#include <float.h>
+#include <sys/types.h>
+#include <share.h>
 #else
 #include <math.h>
 #endif
 
+long workshopmap_group_handler = -1;
+extern "C" {
+    extern char nofog;
+}
 int swGetTile(int tile_no, int *width, int *height, void *data) {
     PTHead * pth = 0;
     int x, y;
     GLsizei w, h;
     unsigned int *buffer;
+    if (!nofog) bglDisable(GL_FOG);
     pth = PT_GetHead(tile_no, 0, 0, 3, 0);
+    if (!nofog) bglEnable(GL_FOG);
     if (pth != NULL) {
         GLuint glpic = pth->pic[PTHPIC_BASE]->glpic;
         
@@ -80,7 +88,8 @@ int swGetTile(int tile_no, int *width, int *height, void *data) {
             /* transpose pixels     */
             for (y = 0; y < h; y++) {
                 for (x = 0; x < w; x++) {
-                    ((unsigned int*)data)[y+x*h] = buffer[x+y*w];                }
+                    ((unsigned int*)data)[y+x*h] = buffer[x+y*w];
+                }
             }
             free(buffer);
         }
@@ -150,6 +159,59 @@ extern "C"
 double clampd(double v, double min, double max) {
 	return clamp(v, min, max);
 }
+
+extern "C"
+long get_modified_time(const char * path) {
+#ifdef _WIN32
+	struct _stat attr;
+	int fd = 0;
+	_sopen_s(&fd, path, _O_RDONLY, _SH_DENYNO, _S_IREAD);
+	_fstat(fd, &attr);
+	_close(fd);
+#else
+    struct stat attr;
+    stat(path, &attr);
+#endif
+    return attr.st_mtime;
+}
+
+extern "C"
+const char* va(const char *format, ...) {
+    static char buffer[2048];
+    va_list ap;
+    va_start(ap, format);
+    vsprintf(buffer, format, ap);
+    va_end(ap);
+    return buffer;
+}
+
+extern "C"
+char *str_replace ( const char *string, const char *substr, const char *replacement ){
+    char *tok = NULL;
+    char *newstr = NULL;
+    char *oldstr = NULL;
+    char *head = NULL;
+    
+    if ( substr == NULL || replacement == NULL ) return strdup (string);
+    newstr = strdup (string);
+    head = newstr;
+    while ( (tok = strstr ( head, substr ))){
+        oldstr = newstr;
+        newstr = (char *) malloc ( strlen ( oldstr ) - strlen ( substr ) + strlen ( replacement ) + 1 );
+        if ( newstr == NULL ){
+            free (oldstr);
+            return NULL;
+        }
+        memcpy ( newstr, oldstr, tok - oldstr );
+        memcpy ( newstr + (tok - oldstr), replacement, strlen ( replacement ) );
+        memcpy ( newstr + (tok - oldstr) + strlen( replacement ), tok + strlen ( substr ), strlen ( oldstr ) - strlen ( substr ) - ( tok - oldstr ) );
+        memset ( newstr + strlen ( oldstr ) - strlen ( substr ) + strlen ( replacement ) , 0, 1 );
+        head = newstr + (tok - oldstr) + strlen( replacement );
+        free (oldstr);
+    }
+    return newstr;
+}
+
 
 typedef struct {
     double h;       // angle in degrees
@@ -327,7 +389,7 @@ bool operator == (const VideoMode& a, const VideoMode& b) {
 void swPullCloudFiles() {
     extern char cloudFileNames[MAX_CLOUD_FILES][MAX_CLOUD_FILE_LENGTH];
 	for (int i = 0; i < MAX_CLOUD_FILES; i++) {
-		//CSTEAM_DownloadFile(cloudFileNames[i]);
+		CSTEAM_DownloadFile(cloudFileNames[i]);
 	}
 }
 
@@ -740,12 +802,11 @@ const char* dnGetVersion() {
 
 void dnSetBrightness(int brightness) {
     gs.Brightness = brightness;
-	setbrightness(gs.Brightness>>2, (char*)palette_data, 0);
+	setbrightness(gs.Brightness >> 2, (char*)palette_data, 0);
 }
 
 int dnGetBrightness() {
     return gs.Brightness;
-	return 0;
 }
 
 void dnEnableSound(int enable) {
@@ -889,7 +950,7 @@ void dnMouseMove(int xrel, int yrel) {
 
 void dnOverrideInput(SW_PACKET *loc) {
     vector2 total_velocity = { 0.0, 0.0 };
-    vector2 mouse_velocity;
+    vector2 mouse_velocity = { 0.0, 0.0 };
     
     mouse_velocity.x = pointer.x*sensitivity.x;
     if(gs.MouseAimingOn)  {
@@ -1033,6 +1094,7 @@ void dnQuitToTitle() {
     DemoMode = TRUE;
     ExitLevel = TRUE;
     ExitToMenu = TRUE;
+    dnUnsetWorkshopMap();
 }
 
 void swFnButtons(PLAYERp pp){
@@ -1162,6 +1224,24 @@ void dnSetUserMap(const char * mapname) {
     }
 }
 
+extern "C" {
+long initgroupfile(char *filename);
+void uninitsinglegroupfile(long grphandle);
+}
+
+void dnSetWorkshopMap(const char * mapname, const char * zipname) {
+    strcpy(UserMapName, mapname);
+    workshopmap_group_handler = initgroupfile((char *)zipname);
+}
+
+void dnUnsetWorkshopMap() {
+    if (workshopmap_group_handler > -1) {
+        uninitsinglegroupfile(workshopmap_group_handler);
+        workshopmap_group_handler = -1;
+    }
+}
+
+
 extern "C"
 int dnFPS = 0;
 
@@ -1182,117 +1262,7 @@ void dnCalcFPS() {
 }
 
 
-// video playback
 
-
-int APIENTRY gluBuild2DMipmaps (
-                                GLenum      target,
-                                GLint       components,
-                                GLint       width,
-                                GLint       height,
-                                GLenum      format,
-                                GLenum      type,
-                                const void  *data);
-
-void DrawIMG(SDL_Surface *img, int x, int y)
-{
-    GLuint texture;
-    
-    glPixelStorei(GL_UNPACK_ALIGNMENT,4);
-    
-    glGenTextures(1,&texture);
-    glBindTexture(GL_TEXTURE_2D,texture);
-    
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,0);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,0);
-    
-    gluBuild2DMipmaps(GL_TEXTURE_2D, 4, img->w, img->h, GL_RGBA, GL_UNSIGNED_BYTE, img->pixels);
-    
-    
-    glBindTexture(GL_TEXTURE_2D, texture);
-    
-    glBegin(GL_QUADS);
-    glTexCoord2f(0.0f, 0.0f); glVertex3f( -1, -1,  0.0f);
-    glTexCoord2f(1.0f, 0.0f); glVertex3f(  1, -1,  0.0f);
-    glTexCoord2f(1.0f, 1.0f); glVertex3f(  1,  1,  0.0f);
-    glTexCoord2f(0.0f, 1.0f); glVertex3f( -1,  1,  0.0f);
-    glEnd();
-    
-    glDeleteTextures(1, &texture);
-}
-
-static
-void smpeg_callback(SDL_Surface* dst, int x, int y,
-                    unsigned int w, unsigned int h) {
-    
-}
-
-
-void play_mpeg_video(const char * filename) {
-    
-    SMPEG *movie = NULL;
-    SDL_Surface *movieSurface = 0;
-    SMPEGstatus mpgStatus;
-    SMPEG_Info movieInfo;
-	char *error;
-	int done;
-    
-    movie = SMPEG_new(filename, &movieInfo, true);
-    
-    error = SMPEG_error(movie);
-    
-    if( error != NULL || movie == NULL ) {
-        printf( "Error loading MPEG: %s\n", error );
-        return;
-    }
-    
-    movieSurface = SDL_CreateRGBSurface(SDL_SWSURFACE, 512, 512, 32, 0xFF, 0xFF00, 0xFF0000, 0);
-    
-    SMPEG_setdisplay(movie, movieSurface, 0, &smpeg_callback);
-    SDL_ShowCursor(SDL_DISABLE);
-    
-    SMPEG_play(movie);
-    SMPEG_getinfo(movie, &movieInfo);
-    
-    glEnable(GL_TEXTURE_2D);
-	glClearColor(1, 0, 1, 1);
-    
-    glDisable(GL_DEPTH_TEST);
-	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-    
-	glViewport(0, 0, ScreenWidth, ScreenHeight);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-    glOrtho(-1, 1, 1, -1, 0, 1);
-    glScalef((16.0f/9.0f)/(ScreenWidth/(float)ScreenHeight), 1, 1);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-    
-    done = 0;
-    
-    while(done == 0) {
-        SDL_Event event;
-        while (SDL_PollEvent(&event)){
-            if (event.type == SDL_QUIT|| event.type == SDL_KEYDOWN || event.type == SDL_MOUSEBUTTONDOWN)  {
-                done = 1;
-            }
-        }
-        glClear(GL_COLOR_BUFFER_BIT);
-        
-        DrawIMG(movieSurface, 0, 0);
-        mpgStatus = SMPEG_status(movie);
-        if(mpgStatus != SMPEG_PLAYING) {
-            done = 1;
-        }
-        SDL_GL_SwapBuffers();
-        
-    }
-    
-    SMPEG_stop(movie);
-    SMPEG_delete(movie);
-    movie = NULL;
-    SDL_FreeSurface(movieSurface);
-}
 
 
 void gfx_tex_blit(int tid) {

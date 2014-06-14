@@ -2462,10 +2462,12 @@ drawscreen(PLAYERp pp)
         
     if (FAF_DebugView)
         clearview(255);    
-        
-    OverlapDraw = TRUE;    
-    DrawOverlapRoom(tx, ty, tz, tang, thoriz, tsectnum);
-    OverlapDraw = FALSE;
+
+    if (!ScreenSavePic) {
+        OverlapDraw = TRUE;
+        DrawOverlapRoom(tx, ty, tz, tang, thoriz, tsectnum);
+        OverlapDraw = FALSE;
+    }
 
     if (dimensionmode != 6 && !ScreenSavePic)
         {

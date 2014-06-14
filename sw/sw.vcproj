@@ -63,7 +63,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				PerUserRedirection="false"
-				AdditionalDependencies="RocketCore.lib RocketControls.lib RocketDebugger.lib ws2_32.lib opengl32.lib glu32.lib winmm.lib SDL.lib SDLmain.lib SDL_mixer.lib smpeg.lib steam_api.lib libcmtd.lib libcpmtd.lib freetype2411MT.lib dsound.lib dinput.lib ddraw.lib dxguid.lib oldnames.lib libogg_static.lib libvorbis_static.lib libvorbisfile_static.lib vpxmtd.lib"
+				AdditionalDependencies="RocketCore.lib RocketControls.lib RocketDebugger.lib ws2_32.lib opengl32.lib glu32.lib winmm.lib SDL.lib SDLmain.lib SDL_mixer.lib steam_api.lib libcmtd.lib libcpmtd.lib freetype2411MT.lib dsound.lib dinput.lib ddraw.lib dxguid.lib oldnames.lib libogg_static.lib libvorbis_static.lib libvorbisfile_static.lib vpxmtd.lib"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;$(ProjectDir)/../thirdparty/lib-win32-Debug&quot;;&quot;$(ProjectDir)/../thirdparty/lib-win32&quot;;&quot;$(ProjectDir)/../steamworks_sdk_123a/redistributable_bin&quot;"
 				IgnoreAllDefaultLibraries="true"
@@ -120,7 +120,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="&quot;$(ProjectDir)/../jfmact.git&quot;;&quot;$(ProjectDir)/../code&quot;;&quot;$(ProjectDir)/../code/playvpx&quot;;&quot;$(ProjectDir)/../code/menu&quot;;&quot;$(ProjectDir)/../code/rocket&quot;;&quot;$(ProjectDir)/../jfaudiolib.git/include&quot;;&quot;$(ProjectDir)/../jfaudiolib.git/src/msvc&quot;;&quot;$(ProjectDir)/../jfaudiolib.git/src&quot;;&quot;$(ProjectDir)/../jfbuild.git/include&quot;;&quot;$(ProjectDir)/../jfbuild.git/src&quot;;&quot;$(ProjectDir)/../jfsw.git/source&quot;;&quot;$(ProjectDir)/../thirdparty/include&quot;;&quot;$(ProjectDir)/../thirdparty/include/SDL&quot;;&quot;$(ProjectDir)/../steamworks_sdk_123a\public\steam&quot;"
+				AdditionalIncludeDirectories="&quot;$(ProjectDir)/../jfmact.git&quot;;&quot;$(ProjectDir)/../code&quot;;&quot;$(ProjectDir)/../code/playvpx&quot;;&quot;$(ProjectDir)/../code/menu&quot;;&quot;$(ProjectDir)/../code/rocket&quot;;&quot;$(ProjectDir)/../jfaudiolib.git/include&quot;;&quot;$(ProjectDir)/../jfaudiolib.git/src/msvc&quot;;&quot;$(ProjectDir)/../jfaudiolib.git/src&quot;;&quot;$(ProjectDir)/../jfbuild.git/include&quot;;&quot;$(ProjectDir)/../jfbuild.git/src&quot;;&quot;$(ProjectDir)/../jfsw.git/source&quot;;&quot;$(ProjectDir)/../thirdparty/include&quot;;&quot;$(ProjectDir)/../thirdparty/include/SDL&quot;;&quot;$(ProjectDir)/../steamworks_sdk_127\public\steam&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;HAVE_SDL=1;NOCOPYPROTECT=1;SUPERBUILD=1;POLYMOST=1;USE_OPENGL=1;DYNAMIC_OPENGL=1;KSFORBUILD=1;RENDERTYPESDL=1;MEGAWANG=1;ENGINE_USING_A_C=1;NOASM=1;_CRT_SECURE_NO_WARNINGS;STATIC_LIB"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -140,9 +140,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="RocketCore.lib RocketControls.lib RocketDebugger.lib ws2_32.lib opengl32.lib glu32.lib winmm.lib SDL.lib SDLmain.lib SDL_mixer.lib smpeg.lib steam_api.lib libcmt.lib libcpmt.lib freetype2411MT.lib dsound.lib dinput.lib ddraw.lib dxguid.lib oldnames.lib libogg_static.lib libvorbis_static.lib libvorbisfile_static.lib vpxmt.lib libirc.lib libm.lib"
+				AdditionalDependencies="RocketCore.lib RocketControls.lib RocketDebugger.lib ws2_32.lib opengl32.lib glu32.lib winmm.lib SDL.lib SDLmain.lib SDL_mixer.lib steam_api.lib libcmt.lib libcpmt.lib freetype2411MT.lib dsound.lib dinput.lib ddraw.lib dxguid.lib oldnames.lib libogg_static.lib libvorbis_static.lib libvorbisfile_static.lib vpxmt.lib libirc.lib libm.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;$(ProjectDir)/../thirdparty/lib-win32-Release&quot;;&quot;$(ProjectDir)/../thirdparty/lib-win32&quot;;&quot;$(ProjectDir)/../steamworks_sdk_123a/redistributable_bin&quot;"
+				AdditionalLibraryDirectories="&quot;$(ProjectDir)/../thirdparty/lib-win32-Release&quot;;&quot;$(ProjectDir)/../thirdparty/lib-win32&quot;;&quot;$(ProjectDir)/../steamworks_sdk_127/redistributable_bin&quot;"
 				IgnoreAllDefaultLibraries="true"
 				GenerateDebugInformation="true"
 				SubSystem="2"

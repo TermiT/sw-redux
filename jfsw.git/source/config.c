@@ -223,6 +223,7 @@ void CONFIG_SetDefaults(void) {
     int32 i,f;
     byte k1,k2;
     extern int32 useDarts;
+	extern BOOL ClassicLighting;
     
     ScreenMode = -1;
     ScreenWidth = 800;
@@ -268,6 +269,7 @@ void CONFIG_SetDefaults(void) {
     dnSetMouseSensitivity(16384);
     gs.MouseInvert = 0;
     gs.MouseAimingOn = TRUE;
+    ClassicLighting = TRUE;
 }
 
 #else
@@ -648,6 +650,9 @@ int32 CONFIG_ReadSetup( void )
    extern char PlayerNameArg[32];
 
 #if MEGAWANG
+   extern BOOL ClassicLighting;
+   extern int32_t r_usenewshading;
+   extern int32_t r_usetileshades;
    extern int32 useDarts;
    dnInitKeyNames();
 #endif
@@ -691,6 +696,15 @@ int32 CONFIG_ReadSetup( void )
             dummy = 145;
         }
         xfov = dummy/90.0f;
+       
+       SCRIPT_GetBoolean(scripthandle, "Screen Setup", "ClassicLighting", &ClassicLighting);
+       if (ClassicLighting) {
+           r_usenewshading = 2;
+           r_usetileshades = 1;
+       } else {
+           r_usenewshading = 0;
+           r_usetileshades = 0;
+       }
 #endif
  
       SCRIPT_GetNumber( scripthandle, "Screen Setup", "GLTextureMode", &gltexfiltermode);
@@ -754,6 +768,7 @@ void CONFIG_WriteSetup( void )
    {
    int32 dummy;
    char buf[80];
+   extern BOOL ClassicLighting;
 
 #if MEGAWANG
    extern int32 useDarts;
@@ -779,8 +794,10 @@ void CONFIG_WriteSetup( void )
    SCRIPT_PutNumber( scripthandle, "Screen Setup", "GLTextureMode",gltexfiltermode,FALSE,FALSE);
    SCRIPT_PutNumber( scripthandle, "Screen Setup", "GLAnisotropy",glanisotropy,FALSE,FALSE);
    SCRIPT_PutNumber( scripthandle, "Screen Setup", "GLUseTextureCompr",glusetexcompr,FALSE,FALSE);
-   
 #if MEGAWANG
+    SCRIPT_PutBoolean(scripthandle, "Screen Setup", "ClassicLighting", ClassicLighting);
+   
+
    SCRIPT_Save(scripthandle, localsetupfilename);
    SCRIPT_Free(scripthandle);
    scripthandle = SCRIPT_Init(setupfilename);
